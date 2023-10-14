@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-// implement retry function who can retry a function if any
-
-// retry() --> true, data,
-
 type Retryable func() bool
 type BackOffFn func(uint64) uint64
 
@@ -26,20 +22,6 @@ type retryManger struct {
 
 const defaultDelayDuration = 1 * time.Second
 
-// Retry(retriableFn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
-// Default:
-//		maxNumberOfRetry -> Infinity
-// 		delay -> 1 * time.Second
-
-// Usage:
-// Retry(retriableFn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
-// Retry(retriableFn func() bool, maxNumberOfRetry int, delay time.Duration)
-// Retry(retriableFn func() bool, retryUntil time.Duration, delay time.Duration)
-// Retry(retriableFn func() bool, retryUntil time.Duration, backOffFn func(uint64) uint64)
-// Retry(retriableFn func() bool, maxNumberOfRetry int)
-// Retry(retriableFn, backOffFn func(uint64) uint64)) [If 2nd argument is function then it will be treated as backOffFn and maxNumberOfRetry will be considered Infinity]
-// Retry(retriableFn)
-
 func (rm *retryManger) parseParams(args ...interface{}) error {
 	if len(args) > 0 {
 		firstArgKind := reflect.TypeOf(args[0]).Kind()
@@ -48,6 +30,8 @@ func (rm *retryManger) parseParams(args ...interface{}) error {
 			rm.retryUntil = maxDuration
 		} else if isIntKind(firstArgKind) {
 			rm.maxRetry = int64(math.Abs(float64(reflect.ValueOf(args[0]).Int())))
+		} else if len(args) == 1 && reflect.TypeOf(args[0]).String() == "func(uint64) uint64" {
+			rm.delayerFn = args[0].(func(uint64) uint64)
 		} else {
 			return errors.New("invalid argument type. maxRetry can be either integer or time.Duration")
 		}
@@ -118,6 +102,19 @@ func (rm *retryManger) execute(fn Retryable) error {
 	return nil
 }
 
+// Retry(retriableFn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
+// Default:
+//		maxNumberOfRetry -> Infinity
+// 		delay -> 1 * time.Second
+
+// Usage:
+// Retry(retriableFn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
+// Retry(retriableFn func() bool, maxNumberOfRetry int, delay time.Duration)
+// Retry(retriableFn func() bool, retryUntil time.Duration, delay time.Duration)
+// Retry(retriableFn func() bool, retryUntil time.Duration, backOffFn func(uint64) uint64)
+// Retry(retriableFn func() bool, maxNumberOfRetry int)
+// Retry(retriableFn, backOffFn func(uint64) uint64)) [If 2nd argument is function then it will be treated as backOffFn and maxNumberOfRetry will be considered Infinity]
+// Retry(retriableFn)
 func Retry(fn Retryable, args ...interface{}) error {
 	retryManager := &retryManger{
 		startedAt: time.Now(),
