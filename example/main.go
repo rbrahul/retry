@@ -66,6 +66,8 @@ func main() {
 	err = retry.Retry(func() bool {
 		fmt.Println("Hello")
 		return true
+	}, func(_ uint64) uint64 {
+		return uint64(2)
 	})
 	if err != nil {
 		fmt.Println("RETRY ERROR Example 3:", err)
