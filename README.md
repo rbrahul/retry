@@ -1,6 +1,6 @@
-[Go test workflow](https://github.com/rbrahul/exception/actions/workflows/go.yaml/badge.svg)
+[Go test workflow](https://github.com/rbrahul/retry/actions/workflows/go.yaml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rbrahul/retry)](https://goreportcard.com/report/github.com/rbrahul/retry)
-[![codecov](https://codecov.io/gh/rbrahul/exception/branch/main/graph/badge.svg?token=CW54A6HWS6)](https://codecov.io/gh/rbrahul/retry)
+[![codecov](https://codecov.io/gh/rbrahul/retry/branch/main/graph/badge.svg?token=XSJW5M8JC4)](https://codecov.io/gh/rbrahul/retry)
 [![Go Reference](https://pkg.go.dev/badge/github.com/rbrahul/retry.svg)](https://pkg.go.dev/github.com/rbrahul/retry)
 
 # Retry
