@@ -2,27 +2,33 @@ package retry
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"reflect"
 	"time"
 )
 
 type Retryable func() bool
-type BackOffFn func(uint64) uint64
+type BackoffFunc func(uint64) uint64
 
-type retryManger struct {
+type retryManager struct {
 	maxRetry    int64
-	delayerFn   BackOffFn
+	backoffFn   BackoffFunc
 	retryUntil  time.Duration
 	startedAt   time.Time
 	delay       time.Duration
-	lastBackOff uint64 // in number of seconds
+	lastBackoff uint64 // in number of seconds
 }
+
+var (
+	ErrMaxRetryOrRetryUntilInvalidArg = errors.New("invalid argument type. maxRetry can be either integer, time.Duration or func(uint64) uint64")
+	ErrDelayOrBackOffFuncInvalidArg   = errors.New("invalid argument type. delay can be either time.Duration or `func(uint64) uint64`")
+	ErrDeadlineExceeded               = errors.New("retry deadline has been exceeded")
+	ErrMaximumRetryExceeded           = errors.New("maximum retry has been exceeded")
+)
 
 const defaultDelayDuration = 1 * time.Second
 
-func (rm *retryManger) parseParams(args ...interface{}) error {
+func (rm *retryManager) parseParams(args ...interface{}) error {
 	if len(args) > 0 {
 		firstArgKind := reflect.TypeOf(args[0]).Kind()
 		if reflect.TypeOf(args[0]).String() == "time.Duration" {
@@ -30,68 +36,61 @@ func (rm *retryManger) parseParams(args ...interface{}) error {
 			rm.retryUntil = maxDuration
 		} else if isIntKind(firstArgKind) {
 			rm.maxRetry = int64(math.Abs(float64(reflect.ValueOf(args[0]).Int())))
-		} else if len(args) == 1 && reflect.TypeOf(args[0]).String() == "func(uint64) uint64" {
-			rm.delayerFn = args[0].(func(uint64) uint64)
 		} else {
-			return errors.New("invalid argument type. maxRetry can be either integer or time.Duration")
+			return ErrMaxRetryOrRetryUntilInvalidArg
 		}
 
-		if len(args) == 1 && reflect.TypeOf(args[0]).String() == "func(uint64) uint64" {
-			rm.delayerFn = args[0].(func(uint64) uint64)
-		}
-
-		// delay in duration /backOff as func --> exponentialBackOff, randInt, customBackOffFn
+		// delay in time.Duration or backOffFunc as func(uint64) uint64
 		if len(args) > 1 {
 			if reflect.TypeOf(args[1]).String() == "time.Duration" {
 				rm.delay = args[1].(time.Duration)
 			} else if reflect.TypeOf(args[1]).String() == "func(uint64) uint64" {
-				rm.delayerFn = args[1].(func(uint64) uint64)
+				rm.backoffFn = args[1].(func(uint64) uint64)
 			} else {
-				return errors.New("invalid argument type for delay. delay can be either time.Duration or `func(uint64) uint64`")
+				return ErrDelayOrBackOffFuncInvalidArg
 			}
 		}
 	}
-	if rm.delayerFn == nil && rm.delay == 0 {
+	if rm.backoffFn == nil && rm.delay == 0 {
 		rm.delay = defaultDelayDuration
 	}
 	return nil
 }
 
-func (rm *retryManger) addDelay() {
+func (rm *retryManager) addDelay() {
 	var delayInBetween time.Duration
-	if rm.lastBackOff == 0 {
-		rm.lastBackOff = 1
+	if rm.lastBackoff == 0 {
+		rm.lastBackoff = 1
 	}
-	if rm.delayerFn != nil {
-		numberOfSeconds := rm.delayerFn(rm.lastBackOff)
-		rm.lastBackOff = numberOfSeconds
+	if rm.backoffFn != nil {
+		numberOfSeconds := rm.backoffFn(rm.lastBackoff)
+		rm.lastBackoff = numberOfSeconds
 		delayInBetween = time.Duration(numberOfSeconds) * time.Second
 	} else {
 		delayInBetween = rm.delay
 	}
-	fmt.Println("delayInBetween:", delayInBetween)
 	withJitter := addJitter(delayInBetween)
-	fmt.Println("With Jitter:", withJitter)
 	time.Sleep(withJitter)
 }
 
-func (rm *retryManger) execute(fn Retryable) error {
+func (rm *retryManager) execute(fn Retryable) error {
 	shouldRetry := fn()
 	for shouldRetry {
 		if rm.retryUntil > 0 {
+			rm.addDelay()
 			deadLineExceeded := time.Now().After(rm.startedAt.Add(rm.retryUntil))
 			if deadLineExceeded {
-				return errors.New("retry deadline has been exceeded")
+				return ErrDeadlineExceeded
 			}
-			rm.addDelay()
 			shouldRetry = fn()
 			continue
 		}
-
+		// If maxRetry is set 5 then 5-1 time will be retried. Because initially function was already excuted once.
+		// Which means: 1 (Initial Call) + 4 retries == 5 maxRetry
 		if rm.maxRetry > 0 {
 			rm.maxRetry -= 1
 			if rm.maxRetry == 0 {
-				return errors.New("maximum retry has been exceeded")
+				return ErrMaximumRetryExceeded
 			}
 		}
 
@@ -113,10 +112,9 @@ func (rm *retryManger) execute(fn Retryable) error {
 // Retry(retriableFn func() bool, retryUntil time.Duration, delay time.Duration)
 // Retry(retriableFn func() bool, retryUntil time.Duration, backOffFn func(uint64) uint64)
 // Retry(retriableFn func() bool, maxNumberOfRetry int)
-// Retry(retriableFn, backOffFn func(uint64) uint64)) [If 2nd argument is function then it will be treated as backOffFn and maxNumberOfRetry will be considered Infinity]
 // Retry(retriableFn)
 func Retry(fn Retryable, args ...interface{}) error {
-	retryManager := &retryManger{
+	retryManager := &retryManager{
 		startedAt: time.Now(),
 	}
 	err := retryManager.parseParams(args...)
