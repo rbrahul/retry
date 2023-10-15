@@ -20,10 +20,14 @@ jobs:
 
     - name: Build
       run: go build -v ./...
-
+  
     - name: Test
       run: go test -timeout 300s -race -coverprofile=coverage.xml -covermode=atomic -v ./...
     #- uses: actions/checkout@master
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - uses: codecov/codecov-action@v1
       with:
           files: ./coverage.xml
@@ -31,3 +35,4 @@ jobs:
           name: codecov-umbrella # optional
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
+    
