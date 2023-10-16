@@ -101,11 +101,13 @@ func (rm *retryManager) execute(fn Retryable) error {
 	return nil
 }
 
+// Retry excutes the function `retriableFn`` in a certain interval applying `delay` or `backoffFunc` and maximum number of times specified as `maxNumberOfRetry` or `retryUntil` until operation suceeds.
 // Retry(retriableFn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
-// Default:
+//
+// Default Parameters:
 //		maxNumberOfRetry -> Infinity
 // 		delay -> 1 * time.Second
-
+//
 // Usage:
 // Retry(retriableFn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
 // Retry(retriableFn func() bool, maxNumberOfRetry int, delay time.Duration)
@@ -113,6 +115,7 @@ func (rm *retryManager) execute(fn Retryable) error {
 // Retry(retriableFn func() bool, retryUntil time.Duration, backOffFn func(uint64) uint64)
 // Retry(retriableFn func() bool, maxNumberOfRetry int)
 // Retry(retriableFn)
+
 func Retry(fn Retryable, args ...interface{}) error {
 	retryManager := &retryManager{
 		startedAt: time.Now(),

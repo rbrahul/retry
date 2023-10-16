@@ -7,7 +7,7 @@
 
 An essential retry-operation related library for Golang to build fault-tolerant system.
 
-## Usages:
+## Installation and Usage:
 
 ```go
 import("github.com/rbrahul/retry")
@@ -19,11 +19,11 @@ import("github.com/rbrahul/retry")
 
     err := retry.Retry(func() bool {
 		err := doesHeavyLifting()
-        if err != nil {
-            return true // retry operation
-        }
-		return false // No need to retry
-	}, 10, 3*time.Second)
+            if err != nil {
+                return true // retry operation
+            }
+            return false // No need to retry
+        }, 10, 3*time.Second)
 
     if err != nil {
         fmt.Error("Maxium retry exceeded")
@@ -63,7 +63,7 @@ import("github.com/rbrahul/retry")
     }
 
 ```
-### Retry failed operations with a maximum 10 retries and with an Custom Backoff function. Delay will be 1.5 times compared to the previous delay.
+### Retry failed operations with a maximum 10 retries and with a custom Backoff function. Delay will be 1.5 times compared to the previous delay.
 
 ```go
     err := retry.Retry(func() bool {
@@ -81,3 +81,6 @@ import("github.com/rbrahul/retry")
     }
 
 ```
+### A note related to the tiny latency:
+
+For every delay there is a Jitter applied to avoid collisions among schedules to resolve (Thundering herd problem)[https://en.wikipedia.org/wiki/Thundering_herd_problem]. The extended delay could be between +10% to +30%.
