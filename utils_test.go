@@ -32,7 +32,7 @@ func TestRandomBackOff(t *testing.T) {
 	lower := 2
 	upper := 7
 	initialBackOff := uint64(1)
-	backoffFunc := RandomBackoff(2, 7)
+	backoffFunc := RandomBackoff(lower, upper)
 	firstBackOff := backoffFunc(initialBackOff)
 	secondBackOff := backoffFunc(firstBackOff)
 	thirdBackOff := backoffFunc(firstBackOff)

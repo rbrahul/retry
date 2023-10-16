@@ -16,7 +16,7 @@ type retryManager struct {
 	retryUntil  time.Duration
 	startedAt   time.Time
 	delay       time.Duration
-	lastBackoff uint64 // in number of seconds
+	lastBackoff uint64 // number of seconds
 }
 
 var (
