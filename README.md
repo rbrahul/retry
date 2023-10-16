@@ -9,14 +9,13 @@ An essential retry-operation related library for Golang to build fault-tolerant 
 
 ## Installation and Usage:
 
-```go
+```golang
 import("github.com/rbrahul/retry")
 ```
 
 ### Retry the failed operation maximum of 10 times with a 3 second delay in between.
 
-```go
-
+```golang
     err := retry.Retry(func() bool {
 		err := doesHeavyLifting()
             if err != nil {
@@ -32,7 +31,7 @@ import("github.com/rbrahul/retry")
 
 ### Retry failed operations with a deadline of 1 minute and with a random interval of 2 to 10 seconds.
 
-```go
+```golang
     err := retry.Retry(func() bool {
 		err := doesHeavyLifting()
         if err != nil {
@@ -49,7 +48,7 @@ import("github.com/rbrahul/retry")
 
 ### Retry failed operations with a deadline of 1 minute and with ExponentialBackoff. Every retry the delay will be twice compared to the previous delay. But the maximum delay will be 10 seconds.
 
-```go
+```golang
     err := retry.Retry(func() bool {
 		err := doesHeavyLifting()
         if err != nil {
@@ -65,7 +64,7 @@ import("github.com/rbrahul/retry")
 ```
 ### Retry failed operations with a maximum 10 retries and with a custom Backoff function. Delay will be 1.5 times compared to the previous delay.
 
-```go
+```golang
     err := retry.Retry(func() bool {
 		err := doesHeavyLifting()
         if err != nil {
