@@ -101,7 +101,9 @@ func (rm *retryManager) execute(fn Retryable) error {
 	return nil
 }
 
-// Retry excutes the function `fn“ in a certain interval applying `delay` or `backoffFunc` and maximum number of times specified as `maxNumberOfRetry` or `retryUntil` until operation suceeds.
+// Retry excutes the function fn in an interval specified as delay or backoffFunc. And it will run until it reaches the maximum number of times specified as maxNumberOfRetry or retryUntil as duration. Retry will be terminated if the fn returns false.
+//
+// Accepted Parameters:
 //
 // Retry(fn func() bool, maxNumberOfRetry int | retryUntil time.Duration,  delay time.Duration | backOffFn func(uint64) uint64))
 //

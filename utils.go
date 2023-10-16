@@ -36,12 +36,24 @@ func randomFloatWithinRange(lower, upper float64) float64 {
 	return lower + rand.Float64()*(upper-lower)
 }
 
+// It returns a random integer value between lower and upper range. And will be considered as the delay in the number of seconds.
+//
+// For Example:
+//
+// RandomBackoff(3,7) will return a dealy between 3 and 7
 func RandomBackoff(lower, upper int) func(uint64) uint64 {
 	return func(_ uint64) uint64 {
 		return randomIntWithinRange(lower, upper)
 	}
 }
 
+// It returns an exponential delay as number of seconds for each retry execution. If delay is > maxBackoff then maxBackoff will be the used as delay for next retry.
+//
+// For Example:
+//
+// ExponentialBackoff(10) will return the following intervals in number seconds as long as the retry is executed.
+//
+// [1 -> 2 -> 4 -> 8 -> 10 -> 10 ...]
 func ExponentialBackoff(maxBackoff int) func(uint64) uint64 {
 	return func(lastBackOff uint64) uint64 {
 		exponentialbackOff := lastBackOff * 2
