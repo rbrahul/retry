@@ -17,8 +17,8 @@ import("github.com/rbrahul/retry")
 
 ```golang
     err := retry.Retry(func() bool {
-		err := doesHeavyLifting()
-            if err != nil {
+	operationError := doesHeavyLifting()
+            if operationError != nil {
                 return true // retry operation
             }
             return false // No need to retry
@@ -33,8 +33,8 @@ import("github.com/rbrahul/retry")
 
 ```golang
     err := retry.Retry(func() bool {
-		err := doesHeavyLifting()
-        if err != nil {
+	operationError := doesHeavyLifting()
+        if operationError != nil {
             return true // retry operation
         }
 		return false // No need to retry
@@ -50,8 +50,8 @@ import("github.com/rbrahul/retry")
 
 ```golang
     err := retry.Retry(func() bool {
-		err := doesHeavyLifting()
-        if err != nil {
+	operationError := doesHeavyLifting()
+        if operationError != nil {
             return true // retry operation
         }
 		return false // No need to retry
@@ -66,8 +66,8 @@ import("github.com/rbrahul/retry")
 
 ```golang
     err := retry.Retry(func() bool {
-		err := doesHeavyLifting()
-        if err != nil {
+	operationError := doesHeavyLifting()
+        if operationError != nil {
             return true // retry operation
         }
 		return false // No need to retry
