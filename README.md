@@ -83,4 +83,5 @@ import("github.com/rbrahul/retry")
 ```
 ### A note related to the tiny latency:
 
-For every delay there is a Jitter applied to avoid collisions among schedules to resolve (Thundering herd problem)[https://en.wikipedia.org/wiki/Thundering_herd_problem]. The extended delay could be between +10% to +30%.
+For every delay there is a Jitter applied to avoid collisions among schedules to resolve [Thundering herd problem](https://en.wikipedia.org/wiki/Thundering_herd_problem).
+ The extended delay could be between +10% to +30%.
