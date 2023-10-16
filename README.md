@@ -5,19 +5,27 @@
 
 # Retry
 
-An essential retry-operation related library for Golang to build fault-tolerant system.
+A reliable and powerful retry library for Golang to build fault-tolerant system.
 
-## Installation and Usage:
+## Installation:
+
+```bash
+$ go get github.com/rbrahul/retry
+```
+
+## Usage:
 
 ```golang
 import("github.com/rbrahul/retry")
 ```
 
+## Examples:
+
 #### Retry the failed operation maximum of 10 times with a 3 second delay in between.
 
 ```golang
     err := retry.Retry(func() bool {
-	operationError := doesHeavyLifting()
+	    operationError := doesHeavyLifting()
             if operationError != nil {
                 return true // retry operation
             }
