@@ -1,6 +1,7 @@
 package retry
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -189,5 +190,50 @@ func TestRetryExitsWithErrorAfterSpecifiedNumberOfTryWithSpecifiedDelayInBetween
 
 	if len(recorder.callStack) != expectedNumberOfCalls {
 		t.Fatalf("Expected retriable function should be executed %d times but was executed %d times", expectedNumberOfCalls, len(recorder.callStack))
+	}
+}
+
+func ExampleRetry() {
+	// Example: Will be called maximum 10 times in every 2 seconds
+	err := Retry(func() bool {
+		return true
+	}, 10, 2*time.Second)
+
+	if err != nil {
+		fmt.Println("Error in Retry:", err)
+	}
+}
+
+func ExampleRetry_withDeadline() {
+	// Example: will be called until 10 seconds from now in every 2 seconds
+	err := Retry(func() bool {
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+	if err != nil {
+		fmt.Println("Error in Retry:", err)
+	}
+}
+
+func ExampleRetry_withRandomBackoff() {
+	// Example: will be called until 1 minute from now with random interval between 3 to 7 seconds
+	err := Retry(func() bool {
+		return true
+	}, 1*time.Minute, RandomBackoff(3, 7))
+
+	if err != nil {
+		fmt.Println("Error in Retry:", err)
+	}
+}
+
+func ExampleRetry_withExponentialBackoff() {
+	// Example: will be called until 1 minute from now with exponential backoff of maximum 10 seconds delay
+	// The exponential delay will be [1, 2, 4, 8, 10, 10, 10, 10]
+	err := Retry(func() bool {
+		return true
+	}, 1*time.Minute, ExponentialBackoff(10))
+
+	if err != nil {
+		fmt.Println("Error in Retry:", err)
 	}
 }

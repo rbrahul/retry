@@ -30,6 +30,11 @@ import("github.com/rbrahul/retry")
 ```
 
 #### Retry failed operations with a deadline of 1 minute and with a random interval of 2 to 10 seconds.
+ RandomBackoff returns a random integer value between lower and upper range. And will be considered as the delay in the number of seconds.
+
+For Example:
+
+RandomBackoff(2,10) will return a dealy between 2 and 10
 
 ```golang
     err := retry.Retry(func() bool {
@@ -38,7 +43,7 @@ import("github.com/rbrahul/retry")
             return true // retry operation
         }
 		return false // No need to retry
-	}, 1 * time.Minute(), retry.RandomBackoff(2, 10))
+	}, 1 * time.Minute, retry.RandomBackoff(2, 10))
 
     if err == retry.ErrDeadlineExceeded {
         fmt.Error("Retry deadline exceeded")
@@ -48,6 +53,17 @@ import("github.com/rbrahul/retry")
 
 #### Retry failed operations with a deadline of 1 minute and with ExponentialBackoff. Every retry the delay will be twice compared to the previous delay. But the maximum delay will be 10 seconds.
 
+ ExponentialBackoff returns an exponential delay as number of seconds for each retry execution. If delay is > maxBackoff then maxBackoff will be the used as delay for next retry.
+
+For Example:
+
+ExponentialBackoff(10) will return the following intervals in number seconds as long as the retry is executed.
+
+```
+[1 -> 2 -> 4 -> 8 -> 10 -> 10 ...]
+```
+ 
+
 ```golang
     err := retry.Retry(func() bool {
 	operationError := doesHeavyLifting()
@@ -55,7 +71,7 @@ import("github.com/rbrahul/retry")
             return true // retry operation
         }
 		return false // No need to retry
-	}, 1 * time.Minute(), retry.ExponentialBackoff(10))
+	}, 1 * time.Minute, retry.ExponentialBackoff(10))
 
     if err == retry.ErrDeadlineExceeded {
         fmt.Error("Retry deadline exceeded")
